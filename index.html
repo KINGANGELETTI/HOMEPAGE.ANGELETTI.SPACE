@@ -49,7 +49,91 @@
       <input id="search-input" class="search-input" type="text" placeholder="Search the web…" autofocus />
     </form>
     <span id="engine-label" class="search-engine-label"></span>
+
+    <!-- Apps Section -->
+    <section id="apps-section" class="apps-section">
+      <h2 class="apps-title">Apps</h2>
+      <div class="apps-grid">
+        <button id="app-weather" class="app-btn" type="button">
+          <svg class="app-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 11.1-13.9A4.5 4.5 0 0117.5 8h1A2.5 2.5 0 0121 10.5 3.5 3.5 0 0117.5 19z"/></svg>
+          <span>Weather</span>
+        </button>
+        <button id="app-calculator" class="app-btn" type="button">
+          <svg class="app-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10.01"/><line x1="12" y1="10" x2="12" y2="10.01"/><line x1="16" y1="10" x2="16" y2="10.01"/><line x1="8" y1="14" x2="8" y2="14.01"/><line x1="12" y1="14" x2="12" y2="14.01"/><line x1="16" y1="14" x2="16" y2="14.01"/><line x1="8" y1="18" x2="8" y2="18.01"/><line x1="12" y1="18" x2="16" y2="18"/></svg>
+          <span>Calculator</span>
+        </button>
+      </div>
+    </section>
   </main>
+
+  <!-- Weather App Modal -->
+  <div id="weather-modal" class="modal-overlay" style="display:none;">
+    <div class="modal app-modal weather-modal">
+      <div class="app-modal-header">
+        <h2 class="modal-title">Weather</h2>
+        <button id="weather-close" class="app-modal-close" type="button">&times;</button>
+      </div>
+      <div class="weather-location-bar">
+        <select id="weather-location" class="form-select">
+          <option value="">Select a city…</option>
+          <option value="40.7128,-74.006">New York</option>
+          <option value="34.0522,-118.2437">Los Angeles</option>
+          <option value="41.8781,-87.6298">Chicago</option>
+          <option value="29.7604,-95.3698">Houston</option>
+          <option value="33.749,-84.388">Atlanta</option>
+          <option value="47.6062,-122.3321">Seattle</option>
+          <option value="37.7749,-122.4194">San Francisco</option>
+          <option value="25.7617,-80.1918">Miami</option>
+          <option value="51.5074,-0.1278">London</option>
+          <option value="48.8566,2.3522">Paris</option>
+          <option value="35.6762,139.6503">Tokyo</option>
+          <option value="55.7558,37.6173">Moscow</option>
+          <option value="-33.8688,151.2093">Sydney</option>
+          <option value="19.4326,-99.1332">Mexico City</option>
+          <option value="52.52,13.405">Berlin</option>
+        </select>
+        <button id="weather-current-loc" class="btn btn-secondary btn-sm" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg>
+          Current Location
+        </button>
+      </div>
+      <div id="weather-content" class="weather-content">
+        <p class="weather-placeholder">Select a city or use your current location to see weather data.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculator App Modal -->
+  <div id="calc-modal" class="modal-overlay" style="display:none;">
+    <div class="modal app-modal calc-modal">
+      <div class="app-modal-header">
+        <h2 class="modal-title">Calculator</h2>
+        <button id="calc-close" class="app-modal-close" type="button">&times;</button>
+      </div>
+      <div id="calc-display" class="calc-display">0</div>
+      <div class="calc-grid">
+        <button class="calc-btn calc-fn" data-action="clear">AC</button>
+        <button class="calc-btn calc-fn" data-action="sign">+/−</button>
+        <button class="calc-btn calc-fn" data-action="percent">%</button>
+        <button class="calc-btn calc-op" data-action="÷">÷</button>
+        <button class="calc-btn" data-action="7">7</button>
+        <button class="calc-btn" data-action="8">8</button>
+        <button class="calc-btn" data-action="9">9</button>
+        <button class="calc-btn calc-op" data-action="×">×</button>
+        <button class="calc-btn" data-action="4">4</button>
+        <button class="calc-btn" data-action="5">5</button>
+        <button class="calc-btn" data-action="6">6</button>
+        <button class="calc-btn calc-op" data-action="−">−</button>
+        <button class="calc-btn" data-action="1">1</button>
+        <button class="calc-btn" data-action="2">2</button>
+        <button class="calc-btn" data-action="3">3</button>
+        <button class="calc-btn calc-op" data-action="+">+</button>
+        <button class="calc-btn calc-zero" data-action="0">0</button>
+        <button class="calc-btn" data-action=".">.</button>
+        <button class="calc-btn calc-op calc-eq" data-action="=">=</button>
+      </div>
+    </div>
+  </div>
 
   <script src="js/app.js"></script>
 </body>
