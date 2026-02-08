@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <a href="index.html" class="nav-brand">Homepage</a>
+    <div class="nav-links">
+      <a href="#" id="admin-logout" class="nav-link" title="Logout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Logout</span>
+      </a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <h1 class="page-title">Admin Dashboard</h1>
+
+    <div class="card">
+      <h2 class="card-title">User Accounts</h2>
+      <p class="form-hint" style="margin-bottom: 16px;">Manage all registered user accounts.</p>
+      <div id="admin-user-list"></div>
+      <p id="admin-no-users" class="form-hint" style="display:none;">No user accounts found.</p>
+    </div>
+  </main>
+
+  <!-- Admin Modal for changing password -->
+  <div id="admin-modal-overlay" class="modal-overlay" style="display:none;">
+    <div class="modal">
+      <h2 class="modal-title" id="admin-modal-title"></h2>
+      <p class="modal-text" id="admin-modal-text"></p>
+      <div id="admin-modal-body"></div>
+      <div style="display:flex; gap:8px; margin-top:16px;">
+        <button id="admin-modal-cancel" class="btn btn-secondary" style="flex:1;">Cancel</button>
+        <button id="admin-modal-confirm" class="btn btn-primary" style="flex:1;">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
