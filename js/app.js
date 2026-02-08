@@ -17,6 +17,12 @@ const Storage = {
 };
 
 /* ===== Auth Helpers ===== */
+function generateRecoveryKey() {
+  const group = () =>
+    String(Math.floor(Math.random() * 10000)).padStart(4, "0");
+  return `${group()}.${group()}.${group()}`;
+}
+
 async function hashPassword(password) {
   const encoder = new TextEncoder();
   const data = encoder.encode(password);
@@ -395,6 +401,28 @@ function initAccount() {
   }
 }
 
+/* ===== Recovery Key Modal ===== */
+function showRecoveryKeyModal(recoveryKey) {
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML =
+    '<h2 class="modal-title">Save Your Recovery Key</h2>' +
+    '<p class="modal-text">Write down this recovery key and keep it safe. You will need it to recover your password.</p>' +
+    '<div class="recovery-key-display">' + recoveryKey + "</div>" +
+    '<button class="btn btn-primary btn-block" id="modal-close-btn">I\'ve saved my key</button>';
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  document.getElementById("modal-close-btn").addEventListener("click", function () {
+    overlay.remove();
+    window.location.href = "index.html";
+  });
+}
+
 /* ===== Login / Register Page Logic ===== */
 function initLogin() {
   // If already logged in, redirect to homepage
@@ -409,12 +437,18 @@ function initLogin() {
   const passwordInput = document.getElementById("auth-password");
   const confirmGroup = document.getElementById("auth-confirm-group");
   const confirmInput = document.getElementById("auth-confirm-password");
+  const recoveryGroup = document.getElementById("auth-recovery-group");
+  const recoveryInput = document.getElementById("auth-recovery-key");
+  const newPasswordGroup = document.getElementById("auth-new-password-group");
+  const newPasswordInput = document.getElementById("auth-new-password");
   const submitBtn = document.getElementById("auth-submit");
   const errorEl = document.getElementById("auth-error");
   const toggleLabel = document.getElementById("auth-toggle-label");
   const toggleLink = document.getElementById("auth-toggle-link");
+  const forgotLink = document.getElementById("auth-forgot-link");
 
   let isRegisterMode = false;
+  let isRecoverMode = false;
 
   function showError(msg) {
     if (errorEl) {
@@ -429,10 +463,25 @@ function initLogin() {
 
   function updateMode() {
     hideError();
-    if (isRegisterMode) {
+    if (isRecoverMode) {
+      if (titleEl) titleEl.textContent = "Recover Password";
+      if (cardTitleEl) cardTitleEl.textContent = "Reset your password";
+      if (confirmGroup) confirmGroup.style.display = "none";
+      if (recoveryGroup) recoveryGroup.style.display = "";
+      if (newPasswordGroup) newPasswordGroup.style.display = "";
+      if (passwordInput) passwordInput.parentElement.style.display = "none";
+      if (forgotLink) forgotLink.style.display = "none";
+      if (submitBtn) submitBtn.textContent = "Reset Password";
+      if (toggleLabel) toggleLabel.textContent = "Back to";
+      if (toggleLink) toggleLink.textContent = "Login";
+    } else if (isRegisterMode) {
       if (titleEl) titleEl.textContent = "Create Account";
       if (cardTitleEl) cardTitleEl.textContent = "Create a new account";
       if (confirmGroup) confirmGroup.style.display = "";
+      if (recoveryGroup) recoveryGroup.style.display = "none";
+      if (newPasswordGroup) newPasswordGroup.style.display = "none";
+      if (passwordInput) passwordInput.parentElement.style.display = "";
+      if (forgotLink) forgotLink.style.display = "none";
       if (submitBtn) submitBtn.textContent = "Create Account";
       if (toggleLabel) toggleLabel.textContent = "Already have an account?";
       if (toggleLink) toggleLink.textContent = "Login";
@@ -440,6 +489,10 @@ function initLogin() {
       if (titleEl) titleEl.textContent = "Login";
       if (cardTitleEl) cardTitleEl.textContent = "Sign in to your account";
       if (confirmGroup) confirmGroup.style.display = "none";
+      if (recoveryGroup) recoveryGroup.style.display = "none";
+      if (newPasswordGroup) newPasswordGroup.style.display = "none";
+      if (passwordInput) passwordInput.parentElement.style.display = "";
+      if (forgotLink) forgotLink.style.display = "";
       if (submitBtn) submitBtn.textContent = "Login";
       if (toggleLabel) toggleLabel.textContent = "Don't have an account?";
       if (toggleLink) toggleLink.textContent = "Create Account";
@@ -449,7 +502,21 @@ function initLogin() {
   if (toggleLink) {
     toggleLink.addEventListener("click", (e) => {
       e.preventDefault();
-      isRegisterMode = !isRegisterMode;
+      if (isRecoverMode) {
+        isRecoverMode = false;
+        isRegisterMode = false;
+      } else {
+        isRegisterMode = !isRegisterMode;
+      }
+      updateMode();
+    });
+  }
+
+  if (forgotLink) {
+    forgotLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      isRecoverMode = true;
+      isRegisterMode = false;
       updateMode();
     });
   }
@@ -458,6 +525,33 @@ function initLogin() {
     submitBtn.addEventListener("click", async () => {
       hideError();
       const username = usernameInput ? usernameInput.value.trim() : "";
+
+      if (isRecoverMode) {
+        const recoveryKey = recoveryInput ? recoveryInput.value.trim() : "";
+        const newPassword = newPasswordInput ? newPasswordInput.value : "";
+
+        if (!username || !recoveryKey || !newPassword) {
+          showError("Please fill in all fields.");
+          return;
+        }
+        if (newPassword.length < 6) {
+          showError("New password must be at least 6 characters.");
+          return;
+        }
+        const users = getUsers();
+        if (!users[username] || users[username].recoveryKey !== recoveryKey) {
+          showError("Invalid username or recovery key.");
+          return;
+        }
+        const hashedPassword = await hashPassword(newPassword);
+        users[username].password = hashedPassword;
+        saveUsers(users);
+        showToast("Password reset successfully!");
+        isRecoverMode = false;
+        updateMode();
+        return;
+      }
+
       const password = passwordInput ? passwordInput.value : "";
 
       if (!username || !password) {
@@ -488,11 +582,11 @@ function initLogin() {
           showError("Username already exists. Please choose another.");
           return;
         }
-        users[username] = { password: hashedPassword };
+        const recoveryKey = generateRecoveryKey();
+        users[username] = { password: hashedPassword, recoveryKey: recoveryKey };
         saveUsers(users);
         setCurrentSession(username);
-        showToast("Account created successfully!");
-        window.location.href = "index.html";
+        showRecoveryKeyModal(recoveryKey);
       } else {
         if (!users[username]) {
           showError("Invalid username or password.");
@@ -510,7 +604,7 @@ function initLogin() {
   }
 
   // Allow pressing Enter to submit
-  [usernameInput, passwordInput, confirmInput].forEach((input) => {
+  [usernameInput, passwordInput, confirmInput, recoveryInput, newPasswordInput].forEach((input) => {
     if (input) {
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && submitBtn) {
