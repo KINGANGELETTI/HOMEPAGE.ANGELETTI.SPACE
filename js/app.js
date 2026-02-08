@@ -513,7 +513,7 @@ function initLogin() {
   [usernameInput, passwordInput, confirmInput].forEach((input) => {
     if (input) {
       input.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && submitBtn) {
           e.preventDefault();
           submitBtn.click();
         }
