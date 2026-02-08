@@ -263,6 +263,288 @@ function initHomepage() {
       }
     });
   }
+
+  // Apps
+  initWeatherApp();
+  initCalculatorApp();
+}
+
+/* ===== Weather App ===== */
+const WMO_CODES = {
+  0: { desc: "Clear sky", icon: "☀️" },
+  1: { desc: "Mainly clear", icon: "🌤️" },
+  2: { desc: "Partly cloudy", icon: "⛅" },
+  3: { desc: "Overcast", icon: "☁️" },
+  45: { desc: "Fog", icon: "🌫️" },
+  48: { desc: "Depositing rime fog", icon: "🌫️" },
+  51: { desc: "Light drizzle", icon: "🌦️" },
+  53: { desc: "Moderate drizzle", icon: "🌦️" },
+  55: { desc: "Dense drizzle", icon: "🌧️" },
+  61: { desc: "Slight rain", icon: "🌧️" },
+  63: { desc: "Moderate rain", icon: "🌧️" },
+  65: { desc: "Heavy rain", icon: "🌧️" },
+  71: { desc: "Slight snow", icon: "🌨️" },
+  73: { desc: "Moderate snow", icon: "🌨️" },
+  75: { desc: "Heavy snow", icon: "❄️" },
+  80: { desc: "Slight showers", icon: "🌦️" },
+  81: { desc: "Moderate showers", icon: "🌧️" },
+  82: { desc: "Violent showers", icon: "⛈️" },
+  95: { desc: "Thunderstorm", icon: "⛈️" },
+  96: { desc: "Thunderstorm with hail", icon: "⛈️" },
+  99: { desc: "Thunderstorm with heavy hail", icon: "⛈️" },
+};
+
+const CITY_NAMES = {
+  "40.7128,-74.006": "New York",
+  "34.0522,-118.2437": "Los Angeles",
+  "41.8781,-87.6298": "Chicago",
+  "29.7604,-95.3698": "Houston",
+  "33.749,-84.388": "Atlanta",
+  "47.6062,-122.3321": "Seattle",
+  "37.7749,-122.4194": "San Francisco",
+  "25.7617,-80.1918": "Miami",
+  "51.5074,-0.1278": "London",
+  "48.8566,2.3522": "Paris",
+  "35.6762,139.6503": "Tokyo",
+  "55.7558,37.6173": "Moscow",
+  "-33.8688,151.2093": "Sydney",
+  "19.4326,-99.1332": "Mexico City",
+  "52.52,13.405": "Berlin",
+};
+
+function initWeatherApp() {
+  const modal = document.getElementById("weather-modal");
+  const openBtn = document.getElementById("app-weather");
+  const closeBtn = document.getElementById("weather-close");
+  const locationSelect = document.getElementById("weather-location");
+  const currentLocBtn = document.getElementById("weather-current-loc");
+  const content = document.getElementById("weather-content");
+
+  if (!modal || !openBtn) return;
+
+  openBtn.addEventListener("click", () => {
+    modal.style.display = "flex";
+  });
+
+  closeBtn.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.style.display = "none";
+  });
+
+  locationSelect.addEventListener("change", () => {
+    const val = locationSelect.value;
+    if (!val) return;
+    const [lat, lon] = val.split(",");
+    fetchWeather(lat, lon, CITY_NAMES[val] || "Selected City", content);
+  });
+
+  currentLocBtn.addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      content.innerHTML = '<p class="weather-error">Geolocation is not supported by your browser.</p>';
+      return;
+    }
+    content.innerHTML = '<p class="weather-loading">Getting your location…</p>';
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(4);
+        const lon = pos.coords.longitude.toFixed(4);
+        locationSelect.value = "";
+        fetchWeather(lat, lon, "Current Location", content);
+      },
+      () => {
+        content.innerHTML = '<p class="weather-error">Unable to get your location. Please allow location access or select a city.</p>';
+      }
+    );
+  });
+}
+
+function fetchWeather(lat, lon, cityName, container) {
+  container.innerHTML = '<p class="weather-loading">Loading weather data…</p>';
+  const params = `latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}` +
+    "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m" +
+    "&temperature_unit=fahrenheit&wind_speed_unit=mph";
+  const url = `https://api.open-meteo.com/v1/forecast?${params}`;
+  fetch(url)
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to fetch weather data");
+      return res.json();
+    })
+    .then((data) => {
+      const c = data.current;
+      const wmo = WMO_CODES[c.weather_code] || { desc: "Unknown", icon: "🌡️" };
+      container.innerHTML =
+        '<div class="weather-data">' +
+          '<p class="weather-city">' + escapeHTML(cityName) + '</p>' +
+          '<div class="weather-main">' +
+            '<span class="weather-icon">' + wmo.icon + '</span>' +
+            '<span class="weather-temp">' + Math.round(c.temperature_2m) + '°F</span>' +
+          '</div>' +
+          '<p class="weather-desc">' + escapeHTML(wmo.desc) + '</p>' +
+          '<div class="weather-details">' +
+            '<div class="weather-detail"><div class="weather-detail-label">Feels Like</div><div class="weather-detail-value">' + Math.round(c.apparent_temperature) + '°F</div></div>' +
+            '<div class="weather-detail"><div class="weather-detail-label">Humidity</div><div class="weather-detail-value">' + c.relative_humidity_2m + '%</div></div>' +
+            '<div class="weather-detail"><div class="weather-detail-label">Wind</div><div class="weather-detail-value">' + Math.round(c.wind_speed_10m) + ' mph</div></div>' +
+            '<div class="weather-detail"><div class="weather-detail-label">Condition</div><div class="weather-detail-value">' + escapeHTML(wmo.desc) + '</div></div>' +
+          '</div>' +
+        '</div>';
+    })
+    .catch(() => {
+      container.innerHTML = '<p class="weather-error">Could not load weather data. Please try again.</p>';
+    });
+}
+
+function escapeHTML(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ===== Calculator App ===== */
+function initCalculatorApp() {
+  const modal = document.getElementById("calc-modal");
+  const openBtn = document.getElementById("app-calculator");
+  const closeBtn = document.getElementById("calc-close");
+  const display = document.getElementById("calc-display");
+
+  if (!modal || !openBtn) return;
+
+  let currentValue = "0";
+  let previousValue = null;
+  let operator = null;
+  let resetNext = false;
+
+  function updateDisplay() {
+    display.textContent = currentValue;
+  }
+
+  function calculate(a, op, b) {
+    const numA = parseFloat(a);
+    const numB = parseFloat(b);
+    switch (op) {
+      case "+": return numA + numB;
+      case "−": return numA - numB;
+      case "×": return numA * numB;
+      case "÷": return numB === 0 ? "Error" : numA / numB;
+      default: return numB;
+    }
+  }
+
+  function handleAction(action) {
+    // Digits
+    if (/^[0-9]$/.test(action)) {
+      if (resetNext) {
+        currentValue = action;
+        resetNext = false;
+      } else {
+        currentValue = currentValue === "0" ? action : currentValue + action;
+      }
+      updateDisplay();
+      return;
+    }
+
+    // Decimal
+    if (action === ".") {
+      if (resetNext) {
+        currentValue = "0.";
+        resetNext = false;
+      } else if (!currentValue.includes(".")) {
+        currentValue += ".";
+      }
+      updateDisplay();
+      return;
+    }
+
+    // Clear
+    if (action === "clear") {
+      currentValue = "0";
+      previousValue = null;
+      operator = null;
+      resetNext = false;
+      updateDisplay();
+      return;
+    }
+
+    // Sign toggle
+    if (action === "sign") {
+      if (currentValue !== "0" && currentValue !== "Error") {
+        currentValue = currentValue.startsWith("-") ? currentValue.slice(1) : "-" + currentValue;
+      }
+      updateDisplay();
+      return;
+    }
+
+    // Percent
+    if (action === "percent") {
+      if (currentValue !== "Error") {
+        currentValue = String(parseFloat(currentValue) / 100);
+      }
+      updateDisplay();
+      return;
+    }
+
+    // Operators
+    if (["+", "−", "×", "÷"].includes(action)) {
+      if (previousValue !== null && operator && !resetNext) {
+        const result = calculate(previousValue, operator, currentValue);
+        currentValue = String(result);
+        if (currentValue === "Infinity" || currentValue === "NaN") currentValue = "Error";
+      }
+      previousValue = currentValue;
+      operator = action;
+      resetNext = true;
+      updateDisplay();
+      return;
+    }
+
+    // Equals
+    if (action === "=") {
+      if (previousValue !== null && operator) {
+        const result = calculate(previousValue, operator, currentValue);
+        currentValue = String(result);
+        if (currentValue === "Infinity" || currentValue === "NaN") currentValue = "Error";
+        previousValue = null;
+        operator = null;
+        resetNext = true;
+        updateDisplay();
+      }
+    }
+  }
+
+  openBtn.addEventListener("click", () => {
+    modal.style.display = "flex";
+  });
+
+  closeBtn.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.style.display = "none";
+  });
+
+  modal.querySelectorAll(".calc-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      handleAction(btn.getAttribute("data-action"));
+    });
+  });
+
+  // Keyboard support
+  document.addEventListener("keydown", (e) => {
+    if (modal.style.display === "none") return;
+    const key = e.key;
+    if (/^[0-9]$/.test(key)) { handleAction(key); e.preventDefault(); }
+    else if (key === ".") { handleAction("."); e.preventDefault(); }
+    else if (key === "+") { handleAction("+"); e.preventDefault(); }
+    else if (key === "-") { handleAction("−"); e.preventDefault(); }
+    else if (key === "*") { handleAction("×"); e.preventDefault(); }
+    else if (key === "/") { handleAction("÷"); e.preventDefault(); }
+    else if (key === "Enter" || key === "=") { handleAction("="); e.preventDefault(); }
+    else if (key === "Escape") { modal.style.display = "none"; e.preventDefault(); }
+    else if (key === "Backspace") { handleAction("clear"); e.preventDefault(); }
+  });
 }
 
 /* ===== Settings Page Logic (combined with Account) ===== */
