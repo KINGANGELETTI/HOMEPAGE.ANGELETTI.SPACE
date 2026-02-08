@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <a href="index.html" class="nav-brand">Homepage</a>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link" title="Home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
+        <span>Home</span>
+      </a>
+      <a href="settings.html" class="nav-link" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1.08 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001.08 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1.08z"/></svg>
+        <span>Settings</span>
+      </a>
+      <a href="account.html" class="nav-link" title="Account">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Account</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Settings Content -->
+  <main class="page">
+    <h1 class="page-title">Settings</h1>
+
+    <!-- Search Engine -->
+    <div class="card">
+      <h2 class="card-title">Search Engine</h2>
+      <div class="form-group">
+        <label class="form-label" for="search-engine">Default search engine</label>
+        <select id="search-engine" class="form-select">
+          <option value="google">Google</option>
+          <option value="bing">Bing</option>
+          <option value="duckduckgo">DuckDuckGo</option>
+          <option value="yahoo">Yahoo</option>
+          <option value="brave">Brave Search</option>
+        </select>
+        <p class="form-hint">Used when searching from the homepage.</p>
+      </div>
+    </div>
+
+    <!-- Homepage -->
+    <div class="card">
+      <h2 class="card-title">Homepage</h2>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label-text">Show greeting</div>
+          <div class="toggle-desc">Display a time-based greeting message.</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="show-greeting" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label-text">Show date</div>
+          <div class="toggle-desc">Display today's date below the greeting.</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="show-date" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="form-group" style="margin-top: 16px;">
+        <label class="form-label" for="greeting-name">Greeting name</label>
+        <input id="greeting-name" class="form-input" type="text" placeholder="Your name" />
+        <p class="form-hint">Personalise the greeting (e.g. "Good morning, Alex").</p>
+      </div>
+    </div>
+
+    <!-- Appearance -->
+    <div class="card">
+      <h2 class="card-title">Appearance</h2>
+      <div class="form-group">
+        <label class="form-label" for="theme">Theme</label>
+        <select id="theme" class="form-select">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Accent colour</label>
+        <div class="color-options">
+          <button type="button" class="color-swatch" data-color="#0071e3" style="background:#0071e3" title="Blue"></button>
+          <button type="button" class="color-swatch" data-color="#34c759" style="background:#34c759" title="Green"></button>
+          <button type="button" class="color-swatch" data-color="#ff9500" style="background:#ff9500" title="Orange"></button>
+          <button type="button" class="color-swatch" data-color="#ff3b30" style="background:#ff3b30" title="Red"></button>
+          <button type="button" class="color-swatch" data-color="#af52de" style="background:#af52de" title="Purple"></button>
+          <button type="button" class="color-swatch" data-color="#ff2d55" style="background:#ff2d55" title="Pink"></button>
+          <button type="button" class="color-swatch" data-color="#5ac8fa" style="background:#5ac8fa" title="Teal"></button>
+        </div>
+      </div>
+    </div>
+
+    <button id="save-settings" class="btn btn-primary btn-block">Save Settings</button>
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
