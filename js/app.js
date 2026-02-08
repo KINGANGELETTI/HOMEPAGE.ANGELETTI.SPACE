@@ -491,9 +491,11 @@ function initLogin() {
   const toggleLabel = document.getElementById("auth-toggle-label");
   const toggleLink = document.getElementById("auth-toggle-link");
   const forgotLink = document.getElementById("auth-forgot-link");
+  const adminLink = document.getElementById("auth-admin-link");
 
   let isRegisterMode = false;
   let isRecoverMode = false;
+  let isAdminMode = false;
 
   function showError(msg) {
     if (errorEl) {
@@ -508,36 +510,67 @@ function initLogin() {
 
   function updateMode() {
     hideError();
-    if (isRecoverMode) {
+    if (isAdminMode) {
+      if (titleEl) titleEl.textContent = "Admin Login";
+      if (cardTitleEl) cardTitleEl.textContent = "Enter admin password";
+      if (usernameInput) usernameInput.parentElement.style.display = "none";
+      if (confirmGroup) confirmGroup.style.display = "none";
+      if (recoveryGroup) recoveryGroup.style.display = "none";
+      if (newPasswordGroup) newPasswordGroup.style.display = "none";
+      if (passwordInput) {
+        passwordInput.parentElement.style.display = "";
+        passwordInput.placeholder = "Admin password";
+      }
+      if (forgotLink) forgotLink.style.display = "none";
+      if (adminLink) adminLink.style.display = "none";
+      if (submitBtn) submitBtn.textContent = "Login as Admin";
+      if (toggleLabel) toggleLabel.textContent = "Back to";
+      if (toggleLink) toggleLink.textContent = "User Login";
+    } else if (isRecoverMode) {
       if (titleEl) titleEl.textContent = "Recover Password";
       if (cardTitleEl) cardTitleEl.textContent = "Reset your password";
+      if (usernameInput) usernameInput.parentElement.style.display = "";
       if (confirmGroup) confirmGroup.style.display = "none";
       if (recoveryGroup) recoveryGroup.style.display = "";
       if (newPasswordGroup) newPasswordGroup.style.display = "";
-      if (passwordInput) passwordInput.parentElement.style.display = "none";
+      if (passwordInput) {
+        passwordInput.parentElement.style.display = "none";
+        passwordInput.placeholder = "Enter your password";
+      }
       if (forgotLink) forgotLink.style.display = "none";
+      if (adminLink) adminLink.style.display = "none";
       if (submitBtn) submitBtn.textContent = "Reset Password";
       if (toggleLabel) toggleLabel.textContent = "Back to";
       if (toggleLink) toggleLink.textContent = "Login";
     } else if (isRegisterMode) {
       if (titleEl) titleEl.textContent = "Create Account";
       if (cardTitleEl) cardTitleEl.textContent = "Create a new account";
+      if (usernameInput) usernameInput.parentElement.style.display = "";
       if (confirmGroup) confirmGroup.style.display = "";
       if (recoveryGroup) recoveryGroup.style.display = "none";
       if (newPasswordGroup) newPasswordGroup.style.display = "none";
-      if (passwordInput) passwordInput.parentElement.style.display = "";
+      if (passwordInput) {
+        passwordInput.parentElement.style.display = "";
+        passwordInput.placeholder = "Enter your password";
+      }
       if (forgotLink) forgotLink.style.display = "none";
+      if (adminLink) adminLink.style.display = "none";
       if (submitBtn) submitBtn.textContent = "Create Account";
       if (toggleLabel) toggleLabel.textContent = "Already have an account?";
       if (toggleLink) toggleLink.textContent = "Login";
     } else {
       if (titleEl) titleEl.textContent = "Login";
       if (cardTitleEl) cardTitleEl.textContent = "Sign in to your account";
+      if (usernameInput) usernameInput.parentElement.style.display = "";
       if (confirmGroup) confirmGroup.style.display = "none";
       if (recoveryGroup) recoveryGroup.style.display = "none";
       if (newPasswordGroup) newPasswordGroup.style.display = "none";
-      if (passwordInput) passwordInput.parentElement.style.display = "";
+      if (passwordInput) {
+        passwordInput.parentElement.style.display = "";
+        passwordInput.placeholder = "Enter your password";
+      }
       if (forgotLink) forgotLink.style.display = "";
+      if (adminLink) adminLink.style.display = "";
       if (submitBtn) submitBtn.textContent = "Login";
       if (toggleLabel) toggleLabel.textContent = "Don't have an account?";
       if (toggleLink) toggleLink.textContent = "Create Account";
@@ -547,9 +580,10 @@ function initLogin() {
   if (toggleLink) {
     toggleLink.addEventListener("click", (e) => {
       e.preventDefault();
-      if (isRecoverMode) {
+      if (isRecoverMode || isAdminMode) {
         isRecoverMode = false;
         isRegisterMode = false;
+        isAdminMode = false;
       } else {
         isRegisterMode = !isRegisterMode;
       }
@@ -562,6 +596,17 @@ function initLogin() {
       e.preventDefault();
       isRecoverMode = true;
       isRegisterMode = false;
+      isAdminMode = false;
+      updateMode();
+    });
+  }
+
+  if (adminLink) {
+    adminLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      isAdminMode = true;
+      isRegisterMode = false;
+      isRecoverMode = false;
       updateMode();
     });
   }
@@ -569,6 +614,25 @@ function initLogin() {
   if (submitBtn) {
     submitBtn.addEventListener("click", async () => {
       hideError();
+
+      if (isAdminMode) {
+        const password = passwordInput ? passwordInput.value : "";
+        if (!password) {
+          showError("Please enter the admin password.");
+          return;
+        }
+        const ADMIN_HASH = "295cf3ad93f2babb76f750be5e944d355b94f3c71340b789c6d830217720bcfd";
+        const hashedInput = await hashPassword(password);
+        if (hashedInput !== ADMIN_HASH) {
+          showError("Invalid admin password.");
+          return;
+        }
+        Storage.set("homepage_admin_session", true);
+        showToast("Admin login successful!");
+        window.location.href = "admin.html";
+        return;
+      }
+
       const username = usernameInput ? usernameInput.value.trim() : "";
 
       if (isRecoverMode) {
@@ -661,14 +725,165 @@ function initLogin() {
   });
 }
 
+/* ===== Admin Dashboard Logic ===== */
+function initAdmin() {
+  // Check admin session
+  if (!Storage.get("homepage_admin_session", false)) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const logoutBtn = document.getElementById("admin-logout");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      Storage.remove("homepage_admin_session");
+      window.location.href = "login.html";
+    });
+  }
+
+  const userListEl = document.getElementById("admin-user-list");
+  const noUsersEl = document.getElementById("admin-no-users");
+  const modalOverlay = document.getElementById("admin-modal-overlay");
+  const modalTitle = document.getElementById("admin-modal-title");
+  const modalText = document.getElementById("admin-modal-text");
+  const modalBody = document.getElementById("admin-modal-body");
+  const modalCancel = document.getElementById("admin-modal-cancel");
+  const modalConfirm = document.getElementById("admin-modal-confirm");
+
+  function closeModal() {
+    if (modalOverlay) modalOverlay.style.display = "none";
+  }
+
+  if (modalCancel) modalCancel.addEventListener("click", closeModal);
+
+  function renderUsers() {
+    const users = getUsers();
+    const usernames = Object.keys(users);
+
+    if (!userListEl) return;
+    userListEl.innerHTML = "";
+
+    if (usernames.length === 0) {
+      if (noUsersEl) noUsersEl.style.display = "";
+      return;
+    }
+    if (noUsersEl) noUsersEl.style.display = "none";
+
+    usernames.forEach((username) => {
+      const row = document.createElement("div");
+      row.className = "admin-user-row";
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "admin-user-name";
+      nameSpan.textContent = username;
+
+      const actions = document.createElement("div");
+      actions.className = "admin-user-actions";
+
+      // View Recovery Key button
+      const viewKeyBtn = document.createElement("button");
+      viewKeyBtn.className = "btn btn-secondary btn-sm";
+      viewKeyBtn.textContent = "Recovery Key";
+      viewKeyBtn.addEventListener("click", () => {
+        if (modalOverlay && modalTitle && modalText && modalBody && modalConfirm) {
+          modalTitle.textContent = "Recovery Key";
+          modalText.textContent = "Recovery key for " + username + ":";
+          modalBody.innerHTML = "";
+          const keyDisplay = document.createElement("div");
+          keyDisplay.className = "recovery-key-display";
+          keyDisplay.textContent = users[username].recoveryKey;
+          modalBody.appendChild(keyDisplay);
+          modalConfirm.textContent = "Close";
+          modalConfirm.onclick = closeModal;
+          modalOverlay.style.display = "";
+        }
+      });
+
+      // Change Password button
+      const changePwBtn = document.createElement("button");
+      changePwBtn.className = "btn btn-primary btn-sm";
+      changePwBtn.textContent = "Change Password";
+      changePwBtn.addEventListener("click", () => {
+        if (modalOverlay && modalTitle && modalText && modalBody && modalConfirm) {
+          modalTitle.textContent = "Change Password";
+          modalText.textContent = "Set a new password for " + username + ":";
+          modalBody.innerHTML = "";
+          const input = document.createElement("input");
+          input.type = "password";
+          input.className = "form-input";
+          input.placeholder = "New password";
+          input.id = "admin-new-pw";
+          modalBody.appendChild(input);
+          modalConfirm.textContent = "Change Password";
+          modalConfirm.onclick = async () => {
+            const newPw = input.value;
+            if (!newPw || newPw.length < 6) {
+              showToast("Password must be at least 6 characters.");
+              return;
+            }
+            const currentUsers = getUsers();
+            currentUsers[username].password = await hashPassword(newPw);
+            saveUsers(currentUsers);
+            closeModal();
+            showToast("Password changed for " + username);
+          };
+          modalOverlay.style.display = "";
+        }
+      });
+
+      // Delete button
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "btn btn-danger btn-sm";
+      deleteBtn.textContent = "Delete";
+      deleteBtn.addEventListener("click", () => {
+        if (modalOverlay && modalTitle && modalText && modalBody && modalConfirm) {
+          modalTitle.textContent = "Delete User";
+          modalText.textContent = "Are you sure you want to delete the account \"" + username + "\"? This cannot be undone.";
+          modalBody.innerHTML = "";
+          modalConfirm.textContent = "Delete";
+          modalConfirm.onclick = () => {
+            const currentUsers = getUsers();
+            delete currentUsers[username];
+            saveUsers(currentUsers);
+            // Clean up user data
+            Storage.remove("homepage_settings_" + username);
+            Storage.remove("homepage_account_" + username);
+            // If the deleted user is currently logged in, clear their session
+            if (getCurrentSession() === username) {
+              clearCurrentSession();
+            }
+            closeModal();
+            showToast("User " + username + " deleted");
+            renderUsers();
+          };
+          modalOverlay.style.display = "";
+        }
+      });
+
+      actions.appendChild(viewKeyBtn);
+      actions.appendChild(changePwBtn);
+      actions.appendChild(deleteBtn);
+      row.appendChild(nameSpan);
+      row.appendChild(actions);
+      userListEl.appendChild(row);
+    });
+  }
+
+  renderUsers();
+}
+
 /* ===== Boot ===== */
 document.addEventListener("DOMContentLoaded", () => {
   initGlobal();
 
   const isLoginPage = !!document.getElementById("auth-submit");
+  const isAdminPage = !!document.getElementById("admin-user-list");
 
   if (isLoginPage) {
     initLogin();
+  } else if (isAdminPage) {
+    initAdmin();
   } else {
     // All other pages require authentication
     if (!requireAuth()) return;

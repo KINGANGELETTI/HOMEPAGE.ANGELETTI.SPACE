@@ -522,6 +522,53 @@ a:hover {
   color: var(--text-secondary);
 }
 
+/* ===== Admin Dashboard ===== */
+.admin-user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+
+.admin-user-row:last-child {
+  border-bottom: none;
+}
+
+.admin-user-name {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-user-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 600px) {
+  .admin-user-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .admin-user-actions {
+    flex-wrap: wrap;
+  }
+}
+
 /* ===== Recovery Key Modal ===== */
 .modal-overlay {
   position: fixed;
