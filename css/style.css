@@ -583,11 +583,14 @@ a:hover {
 
 .modal {
   background: var(--card-bg);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 32px;
   max-width: 420px;
   width: 100%;
   box-shadow: var(--shadow-lg);
+  color: var(--text);
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
 }
 
 .modal-title {
@@ -661,6 +664,11 @@ a:hover {
   max-width: 600px;
   margin-top: 32px;
   text-align: center;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: background var(--transition), border-color var(--transition);
 }
 
 .apps-title {
@@ -920,6 +928,7 @@ a:hover {
 .calc-eq {
   background: var(--accent);
   color: #fff;
+  border-color: var(--accent);
 }
 
 .calc-zero {
