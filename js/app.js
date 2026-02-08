@@ -11,7 +11,51 @@ const Storage = {
   set(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
   },
+  remove(key) {
+    localStorage.removeItem(key);
+  },
 };
+
+/* ===== Auth Helpers ===== */
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function getUsers() {
+  return Storage.get("homepage_users", {});
+}
+
+function saveUsers(users) {
+  Storage.set("homepage_users", users);
+}
+
+function getCurrentSession() {
+  return Storage.get("homepage_session", null);
+}
+
+function setCurrentSession(username) {
+  Storage.set("homepage_session", username);
+}
+
+function clearCurrentSession() {
+  Storage.remove("homepage_session");
+}
+
+function isLoggedIn() {
+  return getCurrentSession() !== null;
+}
+
+function requireAuth() {
+  if (!isLoggedIn()) {
+    window.location.href = "login.html";
+    return false;
+  }
+  return true;
+}
 
 /* ===== Default Settings ===== */
 const DEFAULT_SETTINGS = {
@@ -40,11 +84,18 @@ function saveSettings(settings) {
 }
 
 function getAccount() {
-  return Storage.get("homepage_account", { ...DEFAULT_ACCOUNT });
+  const username = getCurrentSession();
+  if (username) {
+    return Storage.get("homepage_account_" + username, { ...DEFAULT_ACCOUNT });
+  }
+  return { ...DEFAULT_ACCOUNT };
 }
 
 function saveAccount(account) {
-  Storage.set("homepage_account", account);
+  const username = getCurrentSession();
+  if (username) {
+    Storage.set("homepage_account_" + username, account);
+  }
 }
 
 /* ===== Theme ===== */
@@ -79,6 +130,22 @@ function initGlobal() {
       link.classList.add("active");
     }
   });
+
+  // Update nav based on login state
+  const loggedIn = isLoggedIn();
+  const logoutLink = document.getElementById("nav-logout");
+  const loginLink = document.getElementById("nav-login");
+  if (logoutLink) logoutLink.style.display = loggedIn ? "" : "none";
+  if (loginLink) loginLink.style.display = loggedIn ? "none" : "";
+
+  // Logout handler
+  if (logoutLink) {
+    logoutLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      clearCurrentSession();
+      window.location.href = "login.html";
+    });
+  }
 }
 
 /* ===== Toast ===== */
@@ -108,6 +175,29 @@ const SEARCH_ENGINES = {
 function initHomepage() {
   const settings = getSettings();
   const account = getAccount();
+  const username = getCurrentSession();
+
+  // User info display
+  const userInfoEl = document.getElementById("user-info");
+  const userAvatarImg = document.getElementById("user-avatar");
+  const userAvatarPlaceholder = document.getElementById("user-avatar-placeholder");
+  const userDisplayName = document.getElementById("user-display-name");
+
+  if (userInfoEl) {
+    const displayLabel = account.displayName || username || "";
+    if (displayLabel) {
+      userInfoEl.style.display = "";
+      if (userDisplayName) userDisplayName.textContent = displayLabel;
+      if (account.avatarData && userAvatarImg) {
+        userAvatarImg.src = account.avatarData;
+        userAvatarImg.style.display = "";
+        if (userAvatarPlaceholder) userAvatarPlaceholder.style.display = "none";
+      } else {
+        if (userAvatarImg) userAvatarImg.style.display = "none";
+        if (userAvatarPlaceholder) userAvatarPlaceholder.style.display = "";
+      }
+    }
+  }
 
   // Greeting
   const greetingEl = document.getElementById("greeting");
@@ -305,11 +395,147 @@ function initAccount() {
   }
 }
 
+/* ===== Login / Register Page Logic ===== */
+function initLogin() {
+  // If already logged in, redirect to homepage
+  if (isLoggedIn()) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  const titleEl = document.getElementById("auth-title");
+  const cardTitleEl = document.getElementById("auth-card-title");
+  const usernameInput = document.getElementById("auth-username");
+  const passwordInput = document.getElementById("auth-password");
+  const confirmGroup = document.getElementById("auth-confirm-group");
+  const confirmInput = document.getElementById("auth-confirm-password");
+  const submitBtn = document.getElementById("auth-submit");
+  const errorEl = document.getElementById("auth-error");
+  const toggleLabel = document.getElementById("auth-toggle-label");
+  const toggleLink = document.getElementById("auth-toggle-link");
+
+  let isRegisterMode = false;
+
+  function showError(msg) {
+    if (errorEl) {
+      errorEl.textContent = msg;
+      errorEl.style.display = "";
+    }
+  }
+
+  function hideError() {
+    if (errorEl) errorEl.style.display = "none";
+  }
+
+  function updateMode() {
+    hideError();
+    if (isRegisterMode) {
+      if (titleEl) titleEl.textContent = "Create Account";
+      if (cardTitleEl) cardTitleEl.textContent = "Create a new account";
+      if (confirmGroup) confirmGroup.style.display = "";
+      if (submitBtn) submitBtn.textContent = "Create Account";
+      if (toggleLabel) toggleLabel.textContent = "Already have an account?";
+      if (toggleLink) toggleLink.textContent = "Login";
+    } else {
+      if (titleEl) titleEl.textContent = "Login";
+      if (cardTitleEl) cardTitleEl.textContent = "Sign in to your account";
+      if (confirmGroup) confirmGroup.style.display = "none";
+      if (submitBtn) submitBtn.textContent = "Login";
+      if (toggleLabel) toggleLabel.textContent = "Don't have an account?";
+      if (toggleLink) toggleLink.textContent = "Create Account";
+    }
+  }
+
+  if (toggleLink) {
+    toggleLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      isRegisterMode = !isRegisterMode;
+      updateMode();
+    });
+  }
+
+  if (submitBtn) {
+    submitBtn.addEventListener("click", async () => {
+      hideError();
+      const username = usernameInput ? usernameInput.value.trim() : "";
+      const password = passwordInput ? passwordInput.value : "";
+
+      if (!username || !password) {
+        showError("Please enter both username and password.");
+        return;
+      }
+
+      if (username.length < 3) {
+        showError("Username must be at least 3 characters.");
+        return;
+      }
+
+      if (password.length < 6) {
+        showError("Password must be at least 6 characters.");
+        return;
+      }
+
+      const users = getUsers();
+      const hashedPassword = await hashPassword(password);
+
+      if (isRegisterMode) {
+        const confirmPassword = confirmInput ? confirmInput.value : "";
+        if (password !== confirmPassword) {
+          showError("Passwords do not match.");
+          return;
+        }
+        if (users[username]) {
+          showError("Username already exists. Please choose another.");
+          return;
+        }
+        users[username] = { password: hashedPassword };
+        saveUsers(users);
+        setCurrentSession(username);
+        showToast("Account created successfully!");
+        window.location.href = "index.html";
+      } else {
+        if (!users[username]) {
+          showError("Invalid username or password.");
+          return;
+        }
+        if (users[username].password !== hashedPassword) {
+          showError("Invalid username or password.");
+          return;
+        }
+        setCurrentSession(username);
+        showToast("Logged in successfully!");
+        window.location.href = "index.html";
+      }
+    });
+  }
+
+  // Allow pressing Enter to submit
+  [usernameInput, passwordInput, confirmInput].forEach((input) => {
+    if (input) {
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          submitBtn.click();
+        }
+      });
+    }
+  });
+}
+
 /* ===== Boot ===== */
 document.addEventListener("DOMContentLoaded", () => {
   initGlobal();
 
-  if (document.getElementById("search-form")) initHomepage();
-  if (document.getElementById("save-settings")) initSettings();
-  if (document.getElementById("save-account")) initAccount();
+  const isLoginPage = !!document.getElementById("auth-submit");
+
+  if (isLoginPage) {
+    initLogin();
+  } else {
+    // All other pages require authentication
+    if (!requireAuth()) return;
+
+    if (document.getElementById("search-form")) initHomepage();
+    if (document.getElementById("save-settings")) initSettings();
+    if (document.getElementById("save-account")) initAccount();
+  }
 });
