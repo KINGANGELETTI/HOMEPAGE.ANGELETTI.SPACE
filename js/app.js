@@ -621,9 +621,9 @@ function initLogin() {
           showError("Please enter the admin password.");
           return;
         }
+        const ADMIN_HASH = "295cf3ad93f2babb76f750be5e944d355b94f3c71340b789c6d830217720bcfd";
         const hashedInput = await hashPassword(password);
-        const adminHash = await hashPassword("PASS003");
-        if (hashedInput !== adminHash) {
+        if (hashedInput !== ADMIN_HASH) {
           showError("Invalid admin password.");
           return;
         }
