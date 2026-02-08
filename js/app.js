@@ -82,11 +82,18 @@ const DEFAULT_ACCOUNT = {
 
 /* ===== Settings & Account State ===== */
 function getSettings() {
-  return Storage.get("homepage_settings", { ...DEFAULT_SETTINGS });
+  const username = getCurrentSession();
+  if (username) {
+    return Storage.get("homepage_settings_" + username, { ...DEFAULT_SETTINGS });
+  }
+  return { ...DEFAULT_SETTINGS };
 }
 
 function saveSettings(settings) {
-  Storage.set("homepage_settings", settings);
+  const username = getCurrentSession();
+  if (username) {
+    Storage.set("homepage_settings_" + username, settings);
+  }
 }
 
 function getAccount() {
@@ -258,16 +265,19 @@ function initHomepage() {
   }
 }
 
-/* ===== Settings Page Logic ===== */
+/* ===== Settings Page Logic (combined with Account) ===== */
 function initSettings() {
   const settings = getSettings();
+  const account = getAccount();
+  const username = getCurrentSession();
 
+  // --- Settings fields ---
   const searchEngineSelect = document.getElementById("search-engine");
   const showGreetingToggle = document.getElementById("show-greeting");
   const showDateToggle = document.getElementById("show-date");
   const greetingNameInput = document.getElementById("greeting-name");
   const themeSelect = document.getElementById("theme");
-  const saveBtn = document.getElementById("save-settings");
+  const saveSettingsBtn = document.getElementById("save-settings");
 
   // Populate current values
   if (searchEngineSelect) searchEngineSelect.value = settings.searchEngine;
@@ -294,9 +304,9 @@ function initSettings() {
     });
   }
 
-  // Save
-  if (saveBtn) {
-    saveBtn.addEventListener("click", () => {
+  // Save settings
+  if (saveSettingsBtn) {
+    saveSettingsBtn.addEventListener("click", () => {
       const activeSwatch = document.querySelector(".color-swatch.active");
       const updated = {
         searchEngine: searchEngineSelect ? searchEngineSelect.value : settings.searchEngine,
@@ -312,12 +322,8 @@ function initSettings() {
       showToast("Settings saved");
     });
   }
-}
 
-/* ===== Account Page Logic ===== */
-function initAccount() {
-  const account = getAccount();
-
+  // --- Account fields ---
   const avatarImg = document.getElementById("avatar-img");
   const avatarPlaceholder = document.getElementById("avatar-placeholder");
   const avatarInput = document.getElementById("avatar-input");
@@ -325,10 +331,10 @@ function initAccount() {
   const displayNameInput = document.getElementById("display-name");
   const emailInput = document.getElementById("email");
   const bioInput = document.getElementById("bio");
-  const saveBtn = document.getElementById("save-account");
+  const saveAccountBtn = document.getElementById("save-account");
   const resetBtn = document.getElementById("reset-account");
 
-  // Populate
+  // Populate account fields
   if (displayNameInput) displayNameInput.value = account.displayName;
   if (emailInput) emailInput.value = account.email;
   if (bioInput) bioInput.value = account.bio;
@@ -365,16 +371,15 @@ function initAccount() {
       const reader = new FileReader();
       reader.onload = (ev) => {
         renderAvatar(ev.target.result);
-        // Temporarily store for save
         avatarInput.dataset.preview = ev.target.result;
       };
       reader.readAsDataURL(file);
     });
   }
 
-  // Save
-  if (saveBtn) {
-    saveBtn.addEventListener("click", () => {
+  // Save account
+  if (saveAccountBtn) {
+    saveAccountBtn.addEventListener("click", () => {
       const updated = {
         displayName: displayNameInput ? displayNameInput.value.trim() : account.displayName,
         email: emailInput ? emailInput.value.trim() : account.email,
@@ -386,7 +391,7 @@ function initAccount() {
     });
   }
 
-  // Reset
+  // Reset account
   if (resetBtn) {
     resetBtn.addEventListener("click", () => {
       if (!window.confirm("Reset all account data? This cannot be undone.")) return;
@@ -397,6 +402,31 @@ function initAccount() {
       renderAvatar("");
       if (avatarInput) avatarInput.dataset.preview = "";
       showToast("Account reset");
+    });
+  }
+
+  // --- Recovery key display & regeneration ---
+  const recoveryKeyDisplay = document.getElementById("recovery-key-value");
+  const regenerateBtn = document.getElementById("regenerate-recovery-key");
+
+  if (recoveryKeyDisplay && username) {
+    const users = getUsers();
+    if (users[username]) {
+      recoveryKeyDisplay.textContent = users[username].recoveryKey;
+    }
+  }
+
+  if (regenerateBtn) {
+    regenerateBtn.addEventListener("click", () => {
+      if (!window.confirm("Generate a new recovery key? Your old key will no longer work.")) return;
+      const users = getUsers();
+      if (username && users[username]) {
+        const newKey = generateRecoveryKey();
+        users[username].recoveryKey = newKey;
+        saveUsers(users);
+        if (recoveryKeyDisplay) recoveryKeyDisplay.textContent = newKey;
+        showToast("Recovery key regenerated");
+      }
     });
   }
 }
@@ -645,6 +675,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (document.getElementById("search-form")) initHomepage();
     if (document.getElementById("save-settings")) initSettings();
-    if (document.getElementById("save-account")) initAccount();
   }
 });

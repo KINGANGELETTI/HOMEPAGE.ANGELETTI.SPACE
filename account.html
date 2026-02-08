@@ -4,75 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Account</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <script>window.location.href = "settings.html";</script>
 </head>
-<body>
-
-  <!-- Navigation -->
-  <nav class="nav">
-    <a href="index.html" class="nav-brand">Homepage</a>
-    <div class="nav-links">
-      <a href="index.html" class="nav-link" title="Home">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
-        <span>Home</span>
-      </a>
-      <a href="settings.html" class="nav-link" title="Settings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1.08 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001.08 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1.08z"/></svg>
-        <span>Settings</span>
-      </a>
-      <a href="account.html" class="nav-link" title="Account">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Account</span>
-      </a>
-      <a href="#" id="nav-logout" class="nav-link" title="Logout" style="display:none;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span>Logout</span>
-      </a>
-      <a href="login.html" id="nav-login" class="nav-link" title="Login" style="display:none;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-        <span>Login</span>
-      </a>
-    </div>
-  </nav>
-  <main class="page">
-    <h1 class="page-title">Account</h1>
-
-    <!-- Profile Picture -->
-    <div class="card">
-      <h2 class="card-title">Profile Picture</h2>
-      <div class="avatar-section">
-        <div class="avatar">
-          <img id="avatar-img" src="" alt="Profile picture" style="display:none" />
-          <span id="avatar-placeholder" class="avatar-placeholder">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          </span>
-        </div>
-        <input type="file" id="avatar-input" accept="image/*" hidden />
-        <span id="avatar-upload-btn" class="avatar-upload-btn">Upload photo</span>
-      </div>
-    </div>
-
-    <!-- Personal Info -->
-    <div class="card">
-      <h2 class="card-title">Personal Information</h2>
-      <div class="form-group">
-        <label class="form-label" for="display-name">Display name</label>
-        <input id="display-name" class="form-input" type="text" placeholder="Your name" />
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="email">Email address</label>
-        <input id="email" class="form-input" type="email" placeholder="you@example.com" />
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="bio">Bio</label>
-        <textarea id="bio" class="form-textarea" placeholder="A short bio about yourself…"></textarea>
-      </div>
-    </div>
-
-    <button id="save-account" class="btn btn-primary btn-block" style="margin-bottom: 12px;">Save Account</button>
-    <button id="reset-account" class="btn btn-danger btn-block">Reset Account Data</button>
-  </main>
-
-  <script src="js/app.js"></script>
-</body>
+<body></body>
 </html>
