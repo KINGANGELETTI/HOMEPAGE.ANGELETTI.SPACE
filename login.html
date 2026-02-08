@@ -37,10 +37,21 @@
         <label class="form-label" for="auth-confirm-password">Confirm Password</label>
         <input id="auth-confirm-password" class="form-input" type="password" placeholder="Confirm your password" autocomplete="new-password" />
       </div>
+      <div id="auth-recovery-group" class="form-group" style="display:none;">
+        <label class="form-label" for="auth-recovery-key">Recovery Key</label>
+        <input id="auth-recovery-key" class="form-input" type="text" placeholder="XXXX.XXXX.XXXX" autocomplete="off" />
+      </div>
+      <div id="auth-new-password-group" class="form-group" style="display:none;">
+        <label class="form-label" for="auth-new-password">New Password</label>
+        <input id="auth-new-password" class="form-input" type="password" placeholder="Enter new password" autocomplete="new-password" />
+      </div>
       <p id="auth-error" class="form-hint" style="color:#ff3b30; display:none;"></p>
     </div>
 
     <button id="auth-submit" class="btn btn-primary btn-block" style="margin-bottom: 12px;">Login</button>
+    <p class="auth-forgot-text" style="text-align:center; margin-bottom: 12px;">
+      <a href="#" id="auth-forgot-link" class="auth-toggle-link">Forgot Password?</a>
+    </p>
     <p class="auth-toggle-text">
       <span id="auth-toggle-label">Don't have an account?</span>
       <a href="#" id="auth-toggle-link" class="auth-toggle-link">Create Account</a>
