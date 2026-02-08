@@ -694,7 +694,7 @@ a:hover {
   gap: 8px;
   width: 96px;
   padding: 16px 8px;
-  background: var(--card-bg);
+  background: var(--input-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
@@ -706,7 +706,7 @@ a:hover {
 }
 
 .app-btn:hover {
-  background: var(--bg-secondary);
+  background: var(--card-bg);
   border-color: var(--accent);
   transform: translateY(-2px);
   box-shadow: var(--shadow);
