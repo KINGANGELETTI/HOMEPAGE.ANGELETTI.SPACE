@@ -55,8 +55,13 @@ function applyTheme(theme) {
 function applyAccentColor(color) {
   if (color) {
     document.documentElement.style.setProperty("--accent", color);
-    // Derive a slightly lighter hover variant
-    document.documentElement.style.setProperty("--accent-hover", color);
+    // Derive a slightly lighter hover variant by adjusting brightness
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    const lighter = (c) => Math.min(255, c + 30);
+    const hover = `#${lighter(r).toString(16).padStart(2, "0")}${lighter(g).toString(16).padStart(2, "0")}${lighter(b).toString(16).padStart(2, "0")}`;
+    document.documentElement.style.setProperty("--accent-hover", hover);
   }
 }
 
