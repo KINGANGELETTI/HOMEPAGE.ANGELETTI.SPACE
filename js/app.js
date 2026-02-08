@@ -18,9 +18,9 @@ const Storage = {
 
 /* ===== Auth Helpers ===== */
 function generateRecoveryKey() {
-  const group = () =>
-    String(Math.floor(Math.random() * 10000)).padStart(4, "0");
-  return `${group()}.${group()}.${group()}`;
+  const arr = new Uint16Array(3);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, (v) => String(v % 10000).padStart(4, "0")).join(".");
 }
 
 async function hashPassword(password) {
@@ -408,16 +408,31 @@ function showRecoveryKeyModal(recoveryKey) {
 
   const modal = document.createElement("div");
   modal.className = "modal";
-  modal.innerHTML =
-    '<h2 class="modal-title">Save Your Recovery Key</h2>' +
-    '<p class="modal-text">Write down this recovery key and keep it safe. You will need it to recover your password.</p>' +
-    '<div class="recovery-key-display">' + recoveryKey + "</div>" +
-    '<button class="btn btn-primary btn-block" id="modal-close-btn">I\'ve saved my key</button>';
 
+  const title = document.createElement("h2");
+  title.className = "modal-title";
+  title.textContent = "Save Your Recovery Key";
+
+  const text = document.createElement("p");
+  text.className = "modal-text";
+  text.textContent = "Write down this recovery key and keep it safe. You will need it to recover your password.";
+
+  const keyDisplay = document.createElement("div");
+  keyDisplay.className = "recovery-key-display";
+  keyDisplay.textContent = recoveryKey;
+
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "btn btn-primary btn-block";
+  closeBtn.textContent = "I've saved my key";
+
+  modal.appendChild(title);
+  modal.appendChild(text);
+  modal.appendChild(keyDisplay);
+  modal.appendChild(closeBtn);
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 
-  document.getElementById("modal-close-btn").addEventListener("click", function () {
+  closeBtn.addEventListener("click", function () {
     overlay.remove();
     window.location.href = "index.html";
   });
